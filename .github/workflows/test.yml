@@ -11,4 +11,4 @@ jobs:
     if: contains(join(toJson(github.event.commits.*.message)), '#skip') != true
     steps:
       - name: commit messages
-        run: echo "Test"
+        run: echo "Test" #change
