@@ -13,4 +13,4 @@ jobs:
         if: contains(join(env.COMMIT_MESSAGES), '#skip')
         env:
           COMMIT_MESSAGES: ${{ toJson(github.event.commits.*.message) }}
-        run: echo "Test"
+        run: echo "Test" #change
