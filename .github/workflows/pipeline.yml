@@ -35,17 +35,29 @@ jobs:
           command: pnpm test:e2e
           start: pnpm start-prod
           wait-on: http://localhost:5000
-
-  deploy:
-    needs: testing
-    if: github.event_name == 'push' && contains(join(toJson(github.event.commits.*.message)), '#skip') != true
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Deploy to render
+      - name: Trigger Deployement
+        id: deploy
+        if: github.event_name == 'push' && contains(join(toJson(github.event.commits.*.message)), '#skip') != true
         run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
-
+      - name: Discord success
+        if: steps.deploy.outcome == 'success'
+        uses: rjstone/discord-webhook-notify@v1.0.4
+        with:
+          severity: info
+          username: Github Actions
+          details: Deployment successful.
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+      - name: Discord failure
+        if: steps.deploy.outcome != 'success'
+        uses: rjstone/discord-webhook-notify@v1.0.4
+        with:
+          severity: error
+          username: Github Actions
+          details: Deployment failed...
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
   tag_release:
-    needs: deploy
+    if: github.event_name == 'push' && contains(join(toJson(github.event.commits.*.message)), '#skip') != true
+    needs: [simple_deployment_pipeline]
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
@@ -56,14 +68,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
-
-  discord_notify:
-    needs: deploy
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Check success of deployment
-        if: jobs.deploy.result == 'success'
-        run: echo 'success'
-      - name: Check failure of deployment
-        if: jobs.deploy.result != 'success'
-        run: echo 'failure'
