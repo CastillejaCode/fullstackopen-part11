@@ -9,7 +9,8 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  simple_deployment_pipeline:
+  testing:
+    name: Linting and Testing
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
@@ -34,19 +35,17 @@ jobs:
           command: pnpm test:e2e
           start: pnpm start-prod
           wait-on: http://localhost:5000
-      - name: Trigger Deployement
-        id: deploy
-        if: github.event_name == 'push' && contains(join(toJson(github.event.commits.*.message)), '#skip') != true
-        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
-      - name: Check success of deployment
-        if: steps.deploy.outcome == 'success'
-        run: echo 'success'
-      - name: Check failure of deployment
-        if: steps.deploy.outcome != 'success'
-        run: echo 'failure'
-  tag_release:
+
+  deploy:
+    needs: testing
     if: github.event_name == 'push' && contains(join(toJson(github.event.commits.*.message)), '#skip') != true
-    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Deploy to render
+        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
+
+  tag_release:
+    needs: deploy
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
@@ -57,3 +56,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
+
+  discord_notify:
+    needs: deploy
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check success of deployment
+        if: jobs.deploy.result == 'success'
+        run: echo 'success'
+      - name: Check failure of deployment
+        if: jobs.deploy.result != 'success'
+        run: echo 'failure'
