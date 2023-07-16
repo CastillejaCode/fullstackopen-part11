@@ -38,11 +38,7 @@ jobs:
         if: github.event_name == 'push' && contains(join(toJson(github.event.commits.*.message)), '#skip') != true
         run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
       - name: Check failure of deployment
-        if: steps.trigger_deployment.outcome != 'success'
-        run: echo 'Failure!'
-      - name: Check success of deployment
-        if: steps.trigger_deployment.outcome == 'success'
-        run: echo 'Success!'
+        run: echo '${{ steps.trigger_deployment.outcome }}'
   tag_release:
     if: github.event_name == 'push' && contains(join(toJson(github.event.commits.*.message)), '#skip') != true
     needs: [simple_deployment_pipeline]
