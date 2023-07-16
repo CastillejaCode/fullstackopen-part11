@@ -39,13 +39,13 @@ jobs:
         if: github.event_name == 'push' && contains(join(toJson(github.event.commits.*.message)), '#skip') != true
         run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
       - name: Check success of deployment
-        if: success
+        if: success()
         run: echo 'success'
       - name: Check canceled of deployment
-        if: cancelled
+        if: cancelled()
         run: echo 'cancelled'
       - name: Check failure of deployment
-        if: failure
+        if: failure()
         run: echo 'failure'
   tag_release:
     if: github.event_name == 'push' && contains(join(toJson(github.event.commits.*.message)), '#skip') != true
