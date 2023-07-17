@@ -3,9 +3,6 @@ name: Periodic Health Check
 on:
   schedule:
     - cron: '30 17/1 * * *'
-  push:
-    branches:
-      - master
 
 jobs:
   health_check:
@@ -21,8 +18,7 @@ jobs:
         with:
           severity: info
           username: Github Health Check
-          description: Heatlh Check Passesd
-          details: It do be working.
+          details: https://fullstackopen-part11.onrender.com is looking good.
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
       - name: Discord failure
         if: failure()
@@ -30,6 +26,5 @@ jobs:
         with:
           severity: error
           username: Github Health Check
-          description: Health Check Failed
-          details: I don' feel so good...
+          details: https://fullstackopen-part11.onrender.com isn't feeling too well...
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
