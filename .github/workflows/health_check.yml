@@ -1,0 +1,35 @@
+name: Periodic Health Check
+
+on:
+  schedule:
+    - cron: '30 17/1 * * *'
+  push:
+    branches:
+      - master
+
+jobs:
+  health_check:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: URL Health Check
+        uses: Jtalk/url-health-check-action@v3.1
+        with:
+          url: https://fullstackopen-part11.onrender.com
+      - name: Discord success
+        if: success()
+        uses: rjstone/discord-webhook-notify@v1.0.4
+        with:
+          severity: info
+          username: Github Health Check
+          description: Heatlh Check Passesd
+          details: It do be working.
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+      - name: Discord failure
+        if: failure()
+        uses: rjstone/discord-webhook-notify@v1.0.4
+        with:
+          severity: error
+          username: Github Health Check
+          description: Health Check Failed
+          details: I don' feel so good...
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
