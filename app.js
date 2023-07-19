@@ -18,6 +18,6 @@ app.get('/health', (req, res) => {
 
 // Change for commit
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log('server started on port 5000') // eslint-disable-line
 })
