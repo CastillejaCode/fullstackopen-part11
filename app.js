@@ -11,7 +11,7 @@ app.get('/version', (req, res) => {
 })
 
 app.get('/health', (req, res) => {
-  res.status(400)
+  res.status(400).send()
 })
 
 // Change for commit
